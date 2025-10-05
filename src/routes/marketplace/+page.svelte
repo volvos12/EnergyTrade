@@ -1,16 +1,23 @@
 <script lang="ts">
-    import { run } from 'svelte/legacy';
-
     import { prosumers, filters } from '$lib/stores/mockdata';
     import { Search, Filter, Grid, List, MapPin, Zap, Star, ShoppingCart } from 'lucide-svelte';
 
     let searchQuery = $state('');
-    let viewMode = $state('grid');
+    let viewMode = $state<'grid' | 'list'>('grid');
     let showFilters = $state(false);
-    let selectedProsumer = $state(null);
+
+    type Prosumer = typeof prosumers[0];
+    let selectedProsumer = $state<Prosumer | null>(null);
     let buyQuantity = $state(10);
 
-    let currentFilters = $state({ energyTypes: [], priceRange: [0.25, 0.70], locations: [], minReputation: 0, sortBy: 'price-low' });
+    let currentFilters = $state({
+        energyTypes: [] as string[],
+        priceRange: [0.25, 0.70] as [number, number],
+        locations: [] as string[],
+        minReputation: 0,
+        sortBy: 'price-low'
+    });
+
     filters.subscribe(value => currentFilters = value);
 
     const energyTypes = ['Solar', 'Wind', 'Hydro', 'Mixed'];
@@ -21,9 +28,9 @@
         { value: 'distance', label: 'Nearest First' },
     ];
 
-    let filteredProsumers = $state([]);
+    let filteredProsumers = $state<Prosumer[]>([]);
 
-    run(() => {
+    $effect.pre(() => {
         let result = [...prosumers];
 
         // Search filter
@@ -78,7 +85,7 @@
         }));
     }
 
-    function openBuyModal(prosumer: typeof prosumers[0]) {
+    function openBuyModal(prosumer: Prosumer) {
         selectedProsumer = prosumer;
         buyQuantity = Math.min(10, prosumer.availableKwh);
     }
@@ -177,7 +184,10 @@
                             max="0.70"
                             step="0.01"
                             value={currentFilters.priceRange[0]}
-                            oninput={(e) => filters.update(f => ({ ...f, priceRange: [+e.currentTarget.value, f.priceRange[1]] }))}
+                            oninput={(e) => {
+                                const target:HTMLInputElement = e.currentTarget ;
+                                filters.update(f => ({ ...f, priceRange: [+target.value, f.priceRange[1]] }));
+                            }}
                             class="flex-1"
                     />
                     <span class="text-sm font-mono w-16">{currentFilters.priceRange[0].toFixed(2)}</span>
@@ -188,7 +198,10 @@
                             max="0.70"
                             step="0.01"
                             value={currentFilters.priceRange[1]}
-                            oninput={(e) => filters.update(f => ({ ...f, priceRange: [f.priceRange[0], +e.currentTarget.value] }))}
+                            oninput={(e) => {
+                                const target:HTMLInputElement = e.currentTarget;
+                                filters.update(f => ({ ...f, priceRange: [f.priceRange[0], +target.value] }));
+                            }}
                             class="flex-1"
                     />
                     <span class="text-sm font-mono w-16">{currentFilters.priceRange[1].toFixed(2)}</span>
@@ -204,7 +217,10 @@
                             max="5"
                             step="0.5"
                             value={currentFilters.minReputation}
-                            oninput={(e) => filters.update(f => ({ ...f, minReputation: +e.currentTarget.value }))}
+                            oninput={(e) => {
+                                const target:HTMLInputElement = e.currentTarget;
+                                filters.update(f => ({ ...f, minReputation: +target.value }));
+                            }}
                             class="flex-1"
                     />
                     <span class="text-sm font-mono w-12">{currentFilters.minReputation.toFixed(1)} ★</span>
@@ -215,7 +231,10 @@
                 <h3 class="font-semibold mb-3">Sort By</h3>
                 <select
                         value={currentFilters.sortBy}
-                        onchange={(e) => filters.update(f => ({ ...f, sortBy: e.currentTarget.value }))}
+                        onchange={(e) => {
+                            const target:HTMLSelectElement = e.currentTarget;
+                            filters.update(f => ({ ...f, sortBy: target.value }));
+                        }}
                         class="w-full px-4 py-2 rounded-lg border bg-background"
                 >
                     {#each sortOptions as option}
@@ -417,4 +436,3 @@
         </div>
     </div>
 {/if}
-
