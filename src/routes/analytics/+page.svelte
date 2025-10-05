@@ -1,5 +1,106 @@
 <script lang="ts">
-    import { BarChart3, TrendingUp, Download } from 'lucide-svelte';
+    import { Download } from 'lucide-svelte';
+    import { onMount } from 'svelte';
+    import Chart from 'chart.js/auto';
+
+    let chartCanvas: HTMLCanvasElement;
+    let chartInstance: Chart | null = null;
+
+    onMount(() => {
+        const labels = Array.from({ length: 30 }, (_, i) => {
+            const date = new Date();
+            date.setDate(date.getDate() - (29 - i));
+            return date.toLocaleDateString('ro-RO', { month: 'short', day: 'numeric' });
+        });
+
+        const priceData = Array.from({ length: 30 }, () =>
+            Math.random() * 0.5 + 0.3 // Random prices between 0.3 and 0.8 RON/kWh
+        );
+
+        const ctx = chartCanvas.getContext('2d');
+        if (ctx) {
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Energy Price (RON/kWh)',
+                        data: priceData,
+                        borderColor: 'rgb(34, 197, 94)',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: 'rgb(34, 197, 94)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: 'hsl(var(--foreground))',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(2)} RON/kWh`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: 'hsl(var(--muted-foreground))',
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: 'hsl(var(--border))'
+                            },
+                            ticks: {
+                                color: 'hsl(var(--muted-foreground))',
+                                callback: function(value) {
+                                    return value.toFixed(2) + ' RON';
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        }
+
+        return () => {
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+        };
+    });
 </script>
 
 <div class="container mx-auto px-4 py-8 space-y-8">
@@ -7,6 +108,7 @@
         <h1 class="text-3xl font-bold mb-2">Analytics & Reports</h1>
         <p class="text-muted-foreground">Detailed insights into your energy trading</p>
     </div>
+
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-card border rounded-xl p-6">
             <div class="text-sm text-muted-foreground mb-1">Total Energy Traded</div>
@@ -32,6 +134,7 @@
             <div class="text-sm text-muted-foreground">days</div>
         </div>
     </section>
+
     <section class="bg-card border rounded-xl p-6">
         <h2 class="text-xl font-bold mb-4">ESG Report Generator</h2>
         <p class="text-sm text-muted-foreground mb-4">
@@ -63,14 +166,11 @@
             </ul>
         </div>
     </section>
+
     <section class="bg-card border rounded-xl p-6">
         <h2 class="text-xl font-bold mb-4">Price Analytics</h2>
-        <div class="h-64 flex items-center justify-center bg-accent rounded-lg">
-            <div class="text-center text-muted-foreground">
-                <BarChart3 class="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p>Price chart visualization would appear here</p>
-                <p class="text-sm">(Chart.js or Recharts integration)</p>
-            </div>
+        <div class="h-64 rounded-lg">
+            <canvas bind:this={chartCanvas}></canvas>
         </div>
     </section>
 </div>
