@@ -81,6 +81,7 @@
                             ticks: {
                                 color: 'hsl(var(--muted-foreground))',
                                 callback: function(value) {
+                                    //@ts-ignore
                                     return value.toFixed(2) + ' RON';
                                 }
                             }
