@@ -1,7 +1,7 @@
 <script lang="ts">
     import { run } from 'svelte/legacy';
 
-    import { prosumers, filters } from '$lib/stores/mockData';
+    import { prosumers, filters } from '$lib/stores/mockdata';
     import { Search, Filter, Grid, List, MapPin, Zap, Star, ShoppingCart } from 'lucide-svelte';
 
     let searchQuery = $state('');
