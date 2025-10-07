@@ -53,7 +53,7 @@
 						<div class="h-8 w-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
 							<Zap class="h-5 w-5 text-white" />
 						</div>
-						<span class="hidden sm:inline">EnergyTrade</span>
+						<span class="hidden sm:inline">SiEnergy</span>
 					</a>
 				</div>
 
